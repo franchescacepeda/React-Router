@@ -1,18 +1,35 @@
 import { Outlet, Navlink, useLoaderData,
-         form, redirect, useNavigation} from "react-router-dom";
+         form, redirect, useNavigation,  useSubmit,
+        } from "react-router-dom";
          import { getContacts, createContact } from "../contacts";
          export async function action() {
             const contact = await createContact();
             return { contact };
           }
+import { useEffect } from "react";
 import{getcontacts} from "../contacts";
-export async function loader() {
-    const contacts = await getContacts();
-    return redirect(`/contacts/${contact.id}/edit`);
-  }
-export default function Root() {
-    const { contacts } = useLoaderData();
+
+export async function loader({ request }) {
+    const url = new URL(request.url);
+    const q = url.searchParams.get("q");
+    const contacts = await getContacts(q);
+    return {contacts, q};
+}
+
+  export default function Root() {
+    const { contacts, q } = useLoaderData();
     const navigation = useNavigation();
+    const submit = useSubmit();
+
+    const searching =
+    navigation.location &&
+    new URLSearchParams(navigation.location.search).has(
+      "q"
+    );
+    useEffect(() => {
+        document.getElementById("q").value = q;
+      }, [q]);
+    
     return (
       <>
         <div id="sidebar">
@@ -25,15 +42,16 @@ export default function Root() {
                 placeholder="Search"
                 type="search"
                 name="q"
+                defaultValue={q}
+                onChange={(event) => {
+                    submit(event.currentTarget.form);
+                  }}
               />
-              <Form method="post">
-            <button type="submit">New</button>
-          </Form>
 
               <div
                 id="search-spinner"
                 aria-hidden
-                hidden={true}
+                hidden={!searching}
               />
               <div
                 className="sr-only"
@@ -83,7 +101,7 @@ export default function Root() {
         <div id="detail"
         className={
             navigation.state === "loading" ? "loading" : ""
-          }>
+          } >
             
             <Outlet />
         </div>

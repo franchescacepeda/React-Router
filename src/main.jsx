@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom/client'
+import Root from './routes/root';
 import {
   createBrowserRouer,
   RouterProvider,
@@ -11,7 +12,7 @@ const router =  createBrowserRouter (
   [
     {
     path: "/",
-    Element: <div>Hello World!</div>
+    element: <Root />
     },
   ]
 );
